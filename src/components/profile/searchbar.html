@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>search bar</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body{
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        div{
+            display: flex;
+            gap: 0;
+            height: 35px;
+        }
+        input{
+            width: 350px;
+            border: 0px;
+            background-color: rgb(64, 64, 249);
+            border-radius: 0px 7px 7px 0px;
+            outline: none;
+            font-size: 16px;
+            padding-inline-start: 10px;
+        }
+        button{
+            padding: 10px;
+            border-radius: 7px 0px 0px 7px;
+            background-color: rgb(62, 158, 236);
+            border: 0px;
+        }
+        span{
+            font-size: 18px;
+            display: inline-block;
+            margin-right: 7px;
+        }
+    </style>
+</head>
+    <div>
+        <button ><span class="bi bi-search"></span></button>
+        <input type="text" placeholder="Search for products">
+    </div>
+</body>
+</html>
