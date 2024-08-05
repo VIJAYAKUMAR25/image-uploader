@@ -1,23 +1,26 @@
-import React, { useState ,useEffect, useRef} from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./profile.css";
 import profile1 from "../assets/profile1.png";
 import webflow from "../assets/Logo.png";
 import uploadIcon from "../assets/Thumbnail Icons.png";
 import { useDropzone } from "react-dropzone";
 import "react-image-crop/dist/ReactCrop.css";
-import 'react-image-crop/dist/ReactCrop.css';
 import ReactCrop, { centerCrop, convertToPercentCrop, makeAspectCrop } from "react-image-crop";
 import setCanvasPreview from "../../canvasPreview";
+import './profile.css';
+
+
 export function Profile() {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [profile, setProfile] = useState(profile1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [error, setError] = useState(false);
-  const [crop,setCrop] = useState();
+  const [crop, setCrop] = useState();
   const [selectedImageForCrop, setSelectedImageForCrop] = useState(null);
   const imgRef = useRef(null);
   const previewCanvasRef = useRef(null);
   const MIN_DIMENSION = 160;
+
   const onDrop = (acceptedFiles) => {
     if (selectedFiles.length + acceptedFiles.length > 5) {
       setError(true);
@@ -33,24 +36,27 @@ export function Profile() {
       ),
     ]);
   };
+
   const handleCropImage = (index) => {
     setSelectedImageForCrop(selectedFiles[index].preview);
   };
-  const onImageLoad = (e) =>{
-    const {width,height} =e.currentTarget;
-    const cropWidthInPercent = (MIN_DIMENSION/width *100);
+
+  const onImageLoad = (e) => {
+    const { width, height } = e.currentTarget;
+    const cropWidthInPercent = (MIN_DIMENSION / width) * 100;
     const crop = makeAspectCrop(
       {
         unit: '%',
-        width:cropWidthInPercent,
+        width: cropWidthInPercent,
       },
       1,
       width,
       height
     );
-    const centeredCrop = centerCrop(crop,width,height);
+    const centeredCrop = centerCrop(crop, width, height);
     setCrop(centeredCrop);
-  }
+  };
+
   const handleDelete = (index) => {
     const newFiles = [...selectedFiles];
     newFiles.splice(index, 1);
@@ -62,7 +68,6 @@ export function Profile() {
     setSelectedImageIndex(index);
   };
 
-
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: "image/*",
@@ -70,26 +75,24 @@ export function Profile() {
     maxFiles: 5,
   });
 
-  
-
   const updateProfilePicture = () => {
     if (selectedImageIndex !== null) {
       setProfile(selectedFiles[selectedImageIndex].preview);
     }
   };
+
   useEffect(() => {
     return () => {
       // Revoke Object URLs to free up memory
       selectedFiles.forEach(file => URL.revokeObjectURL(file.preview));
     };
   }, [selectedFiles]);
-    
 
   return (
     <div className="profile-card">
       <div className="profile-details">
         <div className="profile-image" id="myprofile">
-          <img src={profile} alt="Profile"  />
+          <img src={profile} alt="Profile" />
           <div className="button-container">
             <button
               className="update-button"
@@ -144,9 +147,7 @@ export function Profile() {
             </div>
             <div
               {...getRootProps({
-                className: `upload-container ${
-                  isDragActive ? "drag-over" : ""
-                }`,
+                className: `upload-container ${isDragActive ? "drag-over" : ""}`,
               })}
             >
               <input {...getInputProps()} className="image-container" />
@@ -179,98 +180,95 @@ export function Profile() {
               )}
             </div>
             <div className="mt-4">
-                {selectedFiles.map((file, index) => {
-                    const isFileTooLarge = file.size > 5 * 1024 * 1024;
-                    const isSupportedFormat = ["image/jpeg", "image/png"].includes(file.type);
+              {selectedFiles.map((file, index) => {
+                const isFileTooLarge = file.size > 5 * 1024 * 1024;
+                const isSupportedFormat = ["image/jpeg", "image/png"].includes(file.type);
 
-                    return (
-                        <div key={index} className="d-flex justify-content-between w-100 mb-4">
-                            <div className="uploaded-image-wrapper">
-                                <img src={file.preview} alt={file.name} className="uploaded-image-preview" />
-                                <div className="d-flex flex-column justify-content-between ms-4">
-                                    <div className="d-flex flex-column">
-                                        <span className="uploaded-image-name mb-2">{file.name}</span>
-                                        <span className="uploaded-image-size">
-                                            {file.size < 1024 * 1024
-                                                ? `${(file.size / 1024).toFixed(2)} KB`
-                                                : `${(file.size / (1024 * 1024)).toFixed(2)} MB`}
-                                        </span>
-                                    </div>
-                                    {isFileTooLarge ? (
-                                        <div className="text-start d-flex" id="error-container">
-                                            <p className="text-danger">
-                                                This image is larger than 5MB. Please select a smaller image.
-                                            </p>
-                                            <button className="btn btn-close fs-6 mt-3 ms-3" onClick={() => handleDelete(index)}></button>
-                                        </div>
-                                    ) : !isSupportedFormat ? (
-                                        <div className="text-start d-flex" id="error-container">
-                                            <p className="text-danger">
-                                                The file format of {file.name} is not supported. Please upload an
-                                                 image in one of the following formats: JPG or PNG.
-                                            </p>
-                                            <button className="btn btn-close fs-6 mt-3 ms-3" onClick={() => handleDelete(index)}></button>
-                                        </div>
-                                    ) : (
-                                        <div className="text-start" id="cropdelete-container">
-                                            <button
-                                                
-                                                className="light-button"
-                                                id="crop-image"
-                                                data-toggle="modal"
-                                                data-target="#cropModal"
-                                                data-dismiss="modal"
-                                                onClick={() => handleCropImage(index)}
-                                            >
-                                                <span className="bi bi-crop me-2"></span> Crop image
-                                            </button>{" "}
-                                            &nbsp;&nbsp;
-                                            <button className="light-button" onClick={() => handleDelete(index)}>
-                                                <span className="bi bi-trash"></span> Delete
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            {!isFileTooLarge && isSupportedFormat && (
-                                <input
-                                    type="radio"
-                                    className="radio-button mb-5"
-                                    name="selectedImage"
-                                    id={`selectedImage${index}`}
-                                    checked={selectedImageIndex === index}
-                                    onChange={() => handleRadioChange(index)}
-                                />
-                            )}
+                return (
+                  <div key={index} className="d-flex justify-content-between w-100 mb-4">
+                    <div className="uploaded-image-wrapper">
+                      <img src={file.preview} alt={file.name} className="uploaded-image-preview" />
+                      <div className="d-flex flex-column justify-content-between ms-4">
+                        <div className="d-flex flex-column">
+                          <span className="uploaded-image-name mb-2">{file.name}</span>
+                          <span className="uploaded-image-size">
+                            {file.size < 1024 * 1024
+                              ? `${(file.size / 1024).toFixed(2)} KB`
+                              : `${(file.size / (1024 * 1024)).toFixed(2)} MB`}
+                          </span>
                         </div>
-                    );
-                })}
+                        {isFileTooLarge ? (
+                          <div className="text-start d-flex" id="error-container">
+                            <p className="text-danger">
+                              This image is larger than 5MB. Please select a smaller image.
+                            </p>
+                            <button className="btn btn-close fs-6 mt-3 ms-3" onClick={() => handleDelete(index)}></button>
+                          </div>
+                        ) : !isSupportedFormat ? (
+                          <div className="text-start d-flex" id="error-container">
+                            <p className="text-danger">
+                              The file format of {file.name} is not supported. Please upload an
+                              image in one of the following formats: JPG or PNG.
+                            </p>
+                            <button className="btn btn-close fs-6 mt-3 ms-3" onClick={() => handleDelete(index)}></button>
+                          </div>
+                        ) : (
+                          <div className="text-start" id="cropdelete-container">
+                            <button
+                              className="light-button"
+                              id="crop-image"
+                              data-toggle="modal"
+                              data-target="#cropModal"
+                              data-dismiss="modal"
+                              onClick={() => handleCropImage(index)}
+                            >
+                              <span className="bi bi-crop me-2"></span>Crop
+                            </button>
+                            <button
+                              className="light-button"
+                              id="delete-image"
+                              onClick={() => handleDelete(index)}
+                            >
+                              <span className="bi bi-trash me-2"></span>Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <input
+                      type="radio"
+                      className="form-check-input align-self-center"
+                      name="profile"
+                      value={index}
+                      onChange={() => handleRadioChange(index)}
+                      checked={selectedImageIndex === index}
+                      disabled={isFileTooLarge || !isSupportedFormat}
+                    />
+                  </div>
+                );
+              })}
             </div>
-
-
-            {selectedFiles.length > 0 && (
-              <div className="upload-btncontainer d-flex justify-content-between mt-2">
-                <button
-                  className="upload-cancel"
-                  type="button"
-                  data-dismiss="modal"
-                  aria-label="Close"
-                >
-                  <span>Cancel</span>
-                </button>
-                <button
-                  className="upload-select"
-                  disabled={selectedImageIndex === null}
-                  onClick={updateProfilePicture}
-                  data-dismiss="modal"
-                >
-                  <span>Select image</span>
-                </button>
-              </div>
-            )}
+            <div className="d-flex justify-content-between align-items-center">
+              <button
+                className="update-button mt-4"
+                data-dismiss="modal"
+                aria-label="Close"
+                onClick={updateProfilePicture}
+              >
+                Update picture
+              </button>
+              <button
+                className="cancel-button mt-4"
+                data-dismiss="modal"
+                aria-label="Close"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
       {/* Crop Modal */}
       <div
         className="modal fade"
@@ -279,12 +277,12 @@ export function Profile() {
         aria-labelledby="cropModalLabel"
         aria-hidden="true"
       >
-        <div className="modal-dialog modal-sm custom-modal-width modal-dialog-centered">
+        <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content custom-modal-content">
             <div className="d-flex flex-column text-start">
               <div className="d-flex justify-content-between">
-                <h3 className="modal-title mb-2" id="cropModalLabel">
-                  Crop your picture
+                <h3 className="modal-title" id="cropModalLabel">
+                  Crop image
                 </h3>
                 <button
                   type="button"
@@ -297,55 +295,45 @@ export function Profile() {
                   </span>
                 </button>
               </div>
-              <div>
+            </div>
+            <div className="crop-container">
+              {selectedImageForCrop && (
                 <ReactCrop
-                crop={crop}
-                circularCrop
-                keepSelection
-                aspect={1}
-                minWidth={160}
-                onChange={
-                  (pixelCrop,percentCrop)=>setCrop(percentCrop)
-                }
+                  crop={crop}
+                  onChange={(c) => setCrop(c)}
+                  onComplete={(c) => setCrop(c)}
+                  aspect={1}
                 >
-                  {selectedImageForCrop && (
-                    <img src={selectedImageForCrop} ref={imgRef} alt="Crop" width={280} height={300} onLoad={onImageLoad}/>
-                  )}
+                  <img
+                    ref={imgRef}
+                    alt="Crop"
+                    src={selectedImageForCrop}
+                    style={{ transform: 'scale(1)' }}
+                    onLoad={onImageLoad}
+                  />
                 </ReactCrop>
-
-                <div className="d-flex justify-content-between mt-2">
-                  <button
-                    className="crop-button"
-                    data-toggle="modal"
-                    data-target="#uploadModal"
-                    data-dismiss="modal"
-                    aria-label="Close"
-                  >
-                    <span>Cancel</span>
-                  </button>
-                  <button
-                    className="crop-button"
-                    style={{ background: "#4338CA", color: "#FFFFFF" }}
-                    data-dismiss="modal"
-                    onClick={()=>{
-                      setCanvasPreview(
-                        imgRef.current,
-                        previewCanvasRef.current,
-                        convertToPercentCrop(crop,
-                          imgRef.current.width,
-                          imgRef.current.height
-                        )
-                      );
-                      if (selectedImageIndex !== null) {
-                        setProfile(imgRef);
-                      }
-
-                    }}
-                  >
-                    <span>Confirm</span>
-                  </button>
-                </div>
-              </div>
+              )}
+            </div>
+            <div className="d-flex justify-content-between align-items-center">
+              <button
+                className="update-button mt-4"
+                data-dismiss="modal"
+                aria-label="Close"
+                onClick={() => {
+                  if (crop?.width && crop?.height && imgRef.current) {
+                    setCanvasPreview(imgRef.current, previewCanvasRef.current, crop);
+                  }
+                }}
+              >
+                Apply crop
+              </button>
+              <button
+                className="cancel-button mt-4"
+                data-dismiss="modal"
+                aria-label="Close"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
