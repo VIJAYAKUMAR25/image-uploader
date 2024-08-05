@@ -1,17 +1,23 @@
-import React, { useState ,useEffect} from "react";
+import React, { useState ,useEffect, useRef} from "react";
 import "./profile.css";
 import profile1 from "../assets/profile1.png";
 import webflow from "../assets/Logo.png";
 import uploadIcon from "../assets/Thumbnail Icons.png";
 import { useDropzone } from "react-dropzone";
 import "react-image-crop/dist/ReactCrop.css";
-
+import 'react-image-crop/dist/ReactCrop.css';
+import ReactCrop, { centerCrop, convertToPercentCrop, makeAspectCrop } from "react-image-crop";
+import setCanvasPreview from "../../canvasPreview";
 export function Profile() {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [profile, setProfile] = useState(profile1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [error, setError] = useState(false);
-
+  const [crop,setCrop] = useState();
+  const [selectedImageForCrop, setSelectedImageForCrop] = useState(null);
+  const imgRef = useRef(null);
+  const previewCanvasRef = useRef(null);
+  const MIN_DIMENSION = 160;
   const onDrop = (acceptedFiles) => {
     if (selectedFiles.length + acceptedFiles.length > 5) {
       setError(true);
@@ -27,7 +33,24 @@ export function Profile() {
       ),
     ]);
   };
-
+  const handleCropImage = (index) => {
+    setSelectedImageForCrop(selectedFiles[index].preview);
+  };
+  const onImageLoad = (e) =>{
+    const {width,height} =e.currentTarget;
+    const cropWidthInPercent = (MIN_DIMENSION/width *100);
+    const crop = makeAspectCrop(
+      {
+        unit: '%',
+        width:cropWidthInPercent,
+      },
+      1,
+      width,
+      height
+    );
+    const centeredCrop = centerCrop(crop,width,height);
+    setCrop(centeredCrop);
+  }
   const handleDelete = (index) => {
     const newFiles = [...selectedFiles];
     newFiles.splice(index, 1);
@@ -54,7 +77,6 @@ export function Profile() {
       setProfile(selectedFiles[selectedImageIndex].preview);
     }
   };
-
   useEffect(() => {
     return () => {
       // Revoke Object URLs to free up memory
@@ -198,6 +220,7 @@ export function Profile() {
                                                 data-toggle="modal"
                                                 data-target="#cropModal"
                                                 data-dismiss="modal"
+                                                onClick={() => handleCropImage(index)}
                                             >
                                                 <span className="bi bi-crop me-2"></span> Crop image
                                             </button>{" "}
@@ -275,7 +298,21 @@ export function Profile() {
                 </button>
               </div>
               <div>
-                <img src={webflow} width={260} height={200} alt="" />
+                <ReactCrop
+                crop={crop}
+                circularCrop
+                keepSelection
+                aspect={1}
+                minWidth={160}
+                onChange={
+                  (pixelCrop,percentCrop)=>setCrop(percentCrop)
+                }
+                >
+                  {selectedImageForCrop && (
+                    <img src={selectedImageForCrop} ref={imgRef} alt="Crop" width={280} height={300} onLoad={onImageLoad}/>
+                  )}
+                </ReactCrop>
+
                 <div className="d-flex justify-content-between mt-2">
                   <button
                     className="crop-button"
@@ -290,6 +327,20 @@ export function Profile() {
                     className="crop-button"
                     style={{ background: "#4338CA", color: "#FFFFFF" }}
                     data-dismiss="modal"
+                    onClick={()=>{
+                      setCanvasPreview(
+                        imgRef.current,
+                        previewCanvasRef.current,
+                        convertToPercentCrop(crop,
+                          imgRef.current.width,
+                          imgRef.current.height
+                        )
+                      );
+                      if (selectedImageIndex !== null) {
+                        setProfile(imgRef);
+                      }
+
+                    }}
                   >
                     <span>Confirm</span>
                   </button>
